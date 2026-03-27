@@ -1,0 +1,26 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+*.prof
+*.cov
+
+# Dependency directories
+# Note: Uncomment the line below if you prefer NOT to check in your vendor directory.
+# vendor/
+
+# Go workspace files (usually kept local)
+go.work
+go.work.sum
+
+# Environment variables (highly recommended to ignore to prevent leaking secrets)
+.env
