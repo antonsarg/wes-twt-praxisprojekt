@@ -179,3 +179,24 @@ func (h *NoteHandler) Search(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(notes)
 }
+
+func (h *NoteHandler) GetMonthlySummary(w http.ResponseWriter, r *http.Request) {
+	// 1. Get User ID from context
+	userID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// 2. Fetch the summary from the database
+	summary, err := h.Notes.GetMonthlySummary(userID)
+	if err != nil {
+		http.Error(w, "Could not fetch monthly summary", http.StatusInternalServerError)
+		return
+	}
+
+	// 3. Send response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(summary)
+}

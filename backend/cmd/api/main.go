@@ -56,6 +56,7 @@ func main() {
 	mux.HandleFunc("POST /notes", middleware.RequireAuth(noteHandler.Create))
 	mux.HandleFunc("GET /notes", middleware.RequireAuth(noteHandler.GetAll))
 	mux.HandleFunc("GET /notes/search", middleware.RequireAuth(noteHandler.Search))
+	mux.HandleFunc("GET /notes/months", middleware.RequireAuth(noteHandler.GetMonthlySummary))
 	mux.HandleFunc("PUT /notes/{id}", middleware.RequireAuth(noteHandler.Update))
 	mux.HandleFunc("DELETE /notes/{id}", middleware.RequireAuth(noteHandler.Delete))
 

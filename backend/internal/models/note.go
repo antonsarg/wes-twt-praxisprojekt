@@ -207,3 +207,44 @@ func (m *NoteModel) Search(userID int, keyword string, tags []string, fromDate, 
 
 	return notes, nil
 }
+
+type MonthlySummary struct {
+	Month string `json:"month"` // Format: "YYYY-MM"
+	Count int    `json:"count"`
+}
+
+// GetMonthlySummary groups a user's notes by month and year
+func (m *NoteModel) GetMonthlySummary(userID int) ([]*MonthlySummary, error) {
+	stmt := `
+		SELECT to_char(created_at, 'YYYY-MM') as month, count(id) as count
+		FROM notes
+		WHERE user_id = $1
+		GROUP BY to_char(created_at, 'YYYY-MM')
+		ORDER BY month DESC`
+
+	rows, err := m.DB.Query(stmt, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var summaries []*MonthlySummary
+	for rows.Next() {
+		s := &MonthlySummary{}
+		err := rows.Scan(&s.Month, &s.Count)
+		if err != nil {
+			return nil, err
+		}
+		summaries = append(summaries, s)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	if summaries == nil {
+		summaries = []*MonthlySummary{}
+	}
+
+	return summaries, nil
+}
