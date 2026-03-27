@@ -1,0 +1,23 @@
+info:
+  name: Generate Title
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:8080/ai/generate-title
+  body:
+    type: json
+    data: |-
+      {
+        "content": "Server-Sent Events (SSE) allow a web server to push data to a browser over a single, long-running HTTP connection. Unlike WebSockets, it is unidirectional (server to client only), which makes it much simpler to implement for things like real-time news feeds or stock tickers."
+      }
+  auth:
+    type: bearer
+    token: "{{jwt_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

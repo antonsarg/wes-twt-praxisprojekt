@@ -43,7 +43,7 @@ func main() {
 	noteModel := &models.NoteModel{DB: db}
 	noteHandler := &handlers.NoteHandler{Notes: noteModel}
 
-	aiHandler := &handlers.AIHandler{}
+	aiHandler := &handlers.AIHandler{Notes: noteModel}
 
 	mux := http.NewServeMux()
 
@@ -67,6 +67,7 @@ func main() {
 	// Protected AI routes
 	mux.HandleFunc("POST /ai/generate-title", middleware.RequireAuth(aiHandler.GenerateTitle))
 	mux.HandleFunc("POST /ai/generate-tags", middleware.RequireAuth(aiHandler.GenerateTags))
+	mux.HandleFunc("GET /ai/monthly-summary", middleware.RequireAuth(aiHandler.GenerateMonthlySummary))
 
 	port := ":8080"
 	fmt.Printf("Starting server on port %s\n", port)

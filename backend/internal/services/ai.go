@@ -143,3 +143,55 @@ func GenerateTags(title, content string) ([]string, error) {
 
 	return cleanTags, nil
 }
+
+// GenerateMonthlySummary asks Ollama to summarize a collection of notes into a short text
+func GenerateMonthlySummary(combinedNotes string) (string, error) {
+	ollamaURL := os.Getenv("OLLAMA_URL")
+	modelName := os.Getenv("OLLAMA_MODEL")
+
+	if ollamaURL == "" || modelName == "" {
+		return "", fmt.Errorf("ollama configuration missing in .env")
+	}
+
+	// We explicitly ask for a German summary ("Fließtext") focusing on core themes
+	prompt := fmt.Sprintf(`
+		You are a helpful AI assistant. Read the following notes from the user from this month.
+		Write a short, coherent summary (continuous text, max. 5 short sentences) in English about the core topics the user has learned or written down.
+		Reply EXCLUSIVELY with the summary. No greetings, no explanations.
+		
+		Notes:
+		%s
+	`, combinedNotes)
+
+	reqBody := ollamaRequest{
+		Model:  modelName,
+		Prompt: prompt,
+		Stream: false,
+	}
+
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", err
+	}
+
+	// Summarizing takes longer than tagging, so we give the client a generous 60-second timeout
+	client := &http.Client{Timeout: 60 * time.Second}
+	resp, err := client.Post(ollamaURL, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", fmt.Errorf("failed to reach Ollama: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("ollama returned status: %d", resp.StatusCode)
+	}
+
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	var ollamaResp ollamaResponse
+	if err := json.Unmarshal(bodyBytes, &ollamaResp); err != nil {
+		return "", err
+	}
+
+	cleanSummary := strings.TrimSpace(ollamaResp.Response)
+	return cleanSummary, nil
+}
