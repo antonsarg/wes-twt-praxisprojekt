@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/lib/pq"
@@ -52,7 +53,7 @@ func (m *NoteModel) GetAllForUser(userID int) ([]*Note, error) {
 		SELECT id, user_id, title, content, tags, created_at, updated_at
 		FROM notes
 		WHERE user_id = $1
-		ORDER BY created_at DESC`
+		ORDER BY updated_at DESC`
 
 	// Query returns multiple rows
 	rows, err := m.DB.Query(stmt, userID)
@@ -135,4 +136,74 @@ func (m *NoteModel) Delete(id, userID int) error {
 	}
 
 	return nil
+}
+
+func (m *NoteModel) Search(userID int, keyword string, tags []string, fromDate, toDate string) ([]*Note, error) {
+	// 1. Start with the base query that belongs to the user
+	stmt := `SELECT id, user_id, title, content, tags, created_at, updated_at FROM notes WHERE user_id = $1`
+
+	// args holds the values we will pass to the database securely
+	args := []any{userID}
+	argID := 2 // We start at $2 because $1 is the userID
+
+	// 2. Add text search (Title OR Content)
+	if keyword != "" {
+		stmt += fmt.Sprintf(` AND (title ILIKE $%d OR content ILIKE $%d)`, argID, argID)
+		args = append(args, "%"+keyword+"%") // The % signs are SQL wildcards for "contains"
+		argID++
+	}
+
+	// 3. Add tags search
+	if len(tags) > 0 {
+		// The && operator in Postgres means "overlap" (find notes that have ANY of these tags)
+		// If you want strict matching (notes must have ALL these tags), use the @> operator instead.
+		stmt += fmt.Sprintf(` AND tags && $%d`, argID)
+		args = append(args, pq.Array(tags))
+		argID++
+	}
+
+	// 4. Add date filters
+	if fromDate != "" {
+		stmt += fmt.Sprintf(` AND created_at >= $%d`, argID)
+		args = append(args, fromDate)
+		argID++
+	}
+	if toDate != "" {
+		// We append " 23:59:59" so it includes the entire end day
+		stmt += fmt.Sprintf(` AND created_at <= $%d`, argID)
+		args = append(args, toDate+" 23:59:59")
+		argID++
+	}
+
+	// 5. Finally, sort the results
+	stmt += ` ORDER BY updated_at DESC`
+
+	// 6. Execute the query (this is identical to how we did GetAllForUser)
+	rows, err := m.DB.Query(stmt, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var notes []*Note
+	for rows.Next() {
+		n := &Note{}
+		var dbTags []string
+		err := rows.Scan(&n.ID, &n.UserID, &n.Title, &n.Content, pq.Array(&dbTags), &n.CreatedAt, &n.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		n.Tags = dbTags
+		notes = append(notes, n)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	if notes == nil {
+		notes = []*Note{} // Return [] instead of null for empty JSON arrays
+	}
+
+	return notes, nil
 }

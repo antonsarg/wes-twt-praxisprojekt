@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt-backend/internal/middleware"
 	"gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt-backend/internal/models"
@@ -138,4 +139,43 @@ func (h *NoteHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"message": "Note deleted successfully"}`))
+}
+
+func (h *NoteHandler) Search(w http.ResponseWriter, r *http.Request) {
+	// 1. Get User ID from context
+	userID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// 2. Parse URL Query Parameters
+	query := r.URL.Query()
+	keyword := query.Get("q")      // e.g., ?q=project
+	tagsParam := query.Get("tags") // e.g., ?tags=golang,mvp
+	fromDate := query.Get("from")  // e.g., ?from=2024-01-01
+	toDate := query.Get("to")      // e.g., ?to=2024-12-31
+
+	// 3. Process the tags string into a slice
+	var tags []string
+	if tagsParam != "" {
+		// Split "golang,mvp" into ["golang", "mvp"]
+		tags = strings.Split(tagsParam, ",")
+
+		// Clean up any accidental whitespace (e.g., "golang, mvp")
+		for i := range tags {
+			tags[i] = strings.TrimSpace(tags[i])
+		}
+	}
+
+	// 4. Call the model
+	notes, err := h.Notes.Search(userID, keyword, tags, fromDate, toDate)
+	if err != nil {
+		http.Error(w, "Error searching notes", http.StatusInternalServerError)
+		return
+	}
+
+	// 5. Send response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(notes)
 }
