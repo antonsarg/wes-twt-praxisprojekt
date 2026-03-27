@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/lib/pq"
@@ -88,4 +89,50 @@ func (m *NoteModel) GetAllForUser(userID int) ([]*Note, error) {
 	}
 
 	return notes, nil
+}
+
+func (m *NoteModel) Update(id, userID int, title, content string, tags []string) error {
+	if tags == nil {
+		tags = []string{}
+	}
+
+	stmt := `
+		UPDATE notes 
+		SET title = $1, content = $2, tags = $3, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $4 AND user_id = $5`
+
+	result, err := m.DB.Exec(stmt, title, content, pq.Array(tags), id, userID)
+	if err != nil {
+		return err
+	}
+
+	// Check if any row was actually updated (prevents silent failures if ID is wrong)
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return errors.New("note not found or you do not have permission to update it")
+	}
+
+	return nil
+}
+
+func (m *NoteModel) Delete(id, userID int) error {
+	stmt := `DELETE FROM notes WHERE id = $1 AND user_id = $2`
+
+	result, err := m.DB.Exec(stmt, id, userID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return errors.New("note not found or you do not have permission to delete it")
+	}
+
+	return nil
 }

@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt-backend/internal/middleware"
 	"gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt-backend/internal/models"
@@ -76,4 +77,65 @@ func (h *NoteHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(notes)
+}
+
+func (h *NoteHandler) Update(w http.ResponseWriter, r *http.Request) {
+	// 1. Get User ID from context
+	userID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// 2. Get Note ID from the URL (Go 1.22+ feature!)
+	noteIDStr := r.PathValue("id")
+	noteID, err := strconv.Atoi(noteIDStr)
+	if err != nil {
+		http.Error(w, "Invalid note ID", http.StatusBadRequest)
+		return
+	}
+
+	// 3. Parse the JSON body
+	var input createNoteInput // We can reuse the struct from the Create handler
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	// 4. Update the database
+	err = h.Notes.Update(noteID, userID, input.Title, input.Content, input.Tags)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "Note updated successfully"}`))
+}
+
+func (h *NoteHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	// 1. Get User ID from context
+	userID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// 2. Get Note ID from the URL
+	noteIDStr := r.PathValue("id")
+	noteID, err := strconv.Atoi(noteIDStr)
+	if err != nil {
+		http.Error(w, "Invalid note ID", http.StatusBadRequest)
+		return
+	}
+
+	// 3. Delete from the database
+	err = h.Notes.Delete(noteID, userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "Note deleted successfully"}`))
 }
