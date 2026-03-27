@@ -1,0 +1,24 @@
+info:
+  name: Generate Tags (AI)
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:8080/ai/generate-tags
+  body:
+    type: json
+    data: |-
+      {
+        "title": "OAuth2 vs JWT",
+        "content": "JWT is a token format, while OAuth2 is an authorization framework. OAuth2 can actually use JWTs as its access tokens. Understanding the difference is crucial for securing APIs."
+      }
+  auth:
+    type: bearer
+    token: "{{jwt_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

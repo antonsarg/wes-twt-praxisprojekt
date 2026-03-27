@@ -43,6 +43,8 @@ func main() {
 	noteModel := &models.NoteModel{DB: db}
 	noteHandler := &handlers.NoteHandler{Notes: noteModel}
 
+	aiHandler := &handlers.AIHandler{}
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
@@ -50,15 +52,20 @@ func main() {
 		w.Write([]byte("Server is healthy!"))
 	})
 
+	// Public routes
 	mux.HandleFunc("POST /register", authHandler.Register)
 	mux.HandleFunc("POST /login", authHandler.Login)
 
+	// Protected Notes routes
 	mux.HandleFunc("POST /notes", middleware.RequireAuth(noteHandler.Create))
 	mux.HandleFunc("GET /notes", middleware.RequireAuth(noteHandler.GetAll))
 	mux.HandleFunc("GET /notes/search", middleware.RequireAuth(noteHandler.Search))
 	mux.HandleFunc("GET /notes/months", middleware.RequireAuth(noteHandler.GetMonthlySummary))
 	mux.HandleFunc("PUT /notes/{id}", middleware.RequireAuth(noteHandler.Update))
 	mux.HandleFunc("DELETE /notes/{id}", middleware.RequireAuth(noteHandler.Delete))
+
+	// Protected AI routes
+	mux.HandleFunc("POST /ai/generate-tags", middleware.RequireAuth(aiHandler.GenerateTags))
 
 	port := ":8080"
 	fmt.Printf("Starting server on port %s\n", port)
