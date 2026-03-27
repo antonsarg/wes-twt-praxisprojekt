@@ -56,3 +56,24 @@ func (h *NoteHandler) Create(w http.ResponseWriter, r *http.Request) {
 		"note_id": noteID,
 	})
 }
+
+func (h *NoteHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	// 1. Extract the User ID from the context (injected by the Auth Middleware)
+	userID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Unauthorized context missing", http.StatusUnauthorized)
+		return
+	}
+
+	// 2. Fetch the notes from the database
+	notes, err := h.Notes.GetAllForUser(userID)
+	if err != nil {
+		http.Error(w, "Could not fetch notes", http.StatusInternalServerError)
+		return
+	}
+
+	// 3. Return the notes as JSON
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(notes)
+}

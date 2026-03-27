@@ -54,6 +54,7 @@ func main() {
 	mux.HandleFunc("POST /login", authHandler.Login)
 
 	mux.HandleFunc("POST /notes", middleware.RequireAuth(noteHandler.Create))
+	mux.HandleFunc("GET /notes", middleware.RequireAuth(noteHandler.GetAll))
 
 	port := ":8080"
 	fmt.Printf("Starting server on port %s\n", port)
