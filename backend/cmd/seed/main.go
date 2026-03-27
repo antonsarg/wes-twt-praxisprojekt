@@ -19,9 +19,9 @@ func main() {
 		log.Printf("Warning: No .env file found: %v", err)
 	}
 
-	dbUser := os.Getenv("POSTGRES_USER")
-	dbPass := os.Getenv("POSTGRES_PASSWORD")
-	dbName := os.Getenv("POSTGRES_DB")
+	dbUser := os.Getenv("DATABASE_USER")
+	dbPass := os.Getenv("DATABASE_PASSWORD")
+	dbName := os.Getenv("DATABASE_NAME")
 
 	if dbUser == "" {
 		log.Fatal("Missing database environment variables. Are you running this from the project root?")
