@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://localhost:8080/notes/search?q=postgres&tags=ai&from=2026-01-01&to=2026-12-31
+  url: "{{baseUrl}}/notes/search?q=postgres&tags=ai&from=2026-01-01&to=2026-12-31"
   params:
     - name: q
       value: postgres

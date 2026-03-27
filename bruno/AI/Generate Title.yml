@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://localhost:8080/ai/generate-title
+  url: "{{baseUrl}}/ai/generate-title"
   body:
     type: json
     data: |-
