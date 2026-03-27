@@ -1,7 +1,7 @@
 info:
   name: Get All Notes
   type: http
-  seq: 5
+  seq: 2
 
 http:
   method: GET

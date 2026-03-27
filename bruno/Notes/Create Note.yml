@@ -1,16 +1,16 @@
 info:
-  name: Update Note
+  name: Create Note
   type: http
-  seq: 6
+  seq: 2
 
 http:
-  method: PUT
-  url: http://localhost:8080/notes/1
+  method: POST
+  url: http://localhost:8080/notes
   body:
     type: json
     data: |-
       {
-        "title": "My Updated Note",
+        "title": "My First Smart Note",
         "content": "This backend is coming together perfectly. Next up: building the dashboard feed!",
         "tags": ["golang", "milestone", "mvp"]
       }
