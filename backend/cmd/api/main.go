@@ -1,12 +1,44 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+
+	"gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt-backend/internal/handlers"
+	"gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt-backend/internal/models"
+
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 func main() {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		log.Printf("Warning: No .env file found: %v", err)
+	}
+
+	dbUser := os.Getenv("POSTGRES_USER")
+	dbPass := os.Getenv("POSTGRES_PASSWORD")
+	dbName := os.Getenv("POSTGRES_DB")
+
+	connStr := fmt.Sprintf("postgres://%s:%s@localhost:5432/%s?sslmode=disable", dbUser, dbPass, dbName)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	if err = db.Ping(); err != nil {
+		log.Fatal("Cannot connect to database:", err)
+	}
+	log.Println("Database connection established")
+
+	userModel := &models.UserModel{DB: db}
+	authHandler := &handlers.AuthHandler{Users: userModel}
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
@@ -14,11 +46,13 @@ func main() {
 		w.Write([]byte("Server is healthy!"))
 	})
 
+	mux.HandleFunc("POST /register", authHandler.Register)
+	mux.HandleFunc("POST /login", authHandler.Login)
+
 	port := ":8080"
 	fmt.Printf("Starting server on port %s\n", port)
 
-	err := http.ListenAndServe(port, mux)
-	if err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+	if err := http.ListenAndServe(":8080", mux); err != nil {
+		log.Fatal(err)
 	}
 }
