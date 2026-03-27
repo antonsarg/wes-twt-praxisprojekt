@@ -36,5 +36,14 @@ services:
       - -database=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
       - up
 
+#  ollama:
+#    image: ollama/ollama
+#    ports:
+#      - "11434:11434"
+#    volumes:
+#      - ollama:/root/.ollama
+#    restart: unless-stopped
+
 volumes:
   pgdata:
+#  ollama:
