@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt-backend/internal/handlers"
+	"gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt-backend/internal/middleware"
 	"gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt-backend/internal/models"
 
 	"github.com/joho/godotenv"
@@ -39,6 +40,9 @@ func main() {
 	userModel := &models.UserModel{DB: db}
 	authHandler := &handlers.AuthHandler{Users: userModel}
 
+	noteModel := &models.NoteModel{DB: db}
+	noteHandler := &handlers.NoteHandler{Notes: noteModel}
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
@@ -48,6 +52,8 @@ func main() {
 
 	mux.HandleFunc("POST /register", authHandler.Register)
 	mux.HandleFunc("POST /login", authHandler.Login)
+
+	mux.HandleFunc("POST /notes", middleware.RequireAuth(noteHandler.Create))
 
 	port := ":8080"
 	fmt.Printf("Starting server on port %s\n", port)

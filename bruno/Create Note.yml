@@ -1,0 +1,17 @@
+info:
+  name: Create Note
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: http://localhost:8080/notes
+  auth:
+    type: bearer
+    token: "{{jwt_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
