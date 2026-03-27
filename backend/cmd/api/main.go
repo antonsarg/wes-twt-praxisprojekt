@@ -65,6 +65,7 @@ func main() {
 	mux.HandleFunc("DELETE /notes/{id}", middleware.RequireAuth(noteHandler.Delete))
 
 	// Protected AI routes
+	mux.HandleFunc("POST /ai/generate-title", middleware.RequireAuth(aiHandler.GenerateTitle))
 	mux.HandleFunc("POST /ai/generate-tags", middleware.RequireAuth(aiHandler.GenerateTags))
 
 	port := ":8080"

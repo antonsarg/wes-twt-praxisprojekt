@@ -10,6 +10,39 @@ import (
 // AIHandler handles all AI-related HTTP requests
 type AIHandler struct{}
 
+type generateTitleInput struct {
+	Content string `json:"content"`
+}
+
+// GenerateTitle responds with a single AI-generated title string
+func (h *AIHandler) GenerateTitle(w http.ResponseWriter, r *http.Request) {
+	var input generateTitleInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	// Validation: We need at least *some* content to generate a title
+	if input.Content == "" || len(input.Content) < 10 {
+		http.Error(w, "Content is too short to generate a meaningful title", http.StatusBadRequest)
+		return
+	}
+
+	// Call our Ollama service
+	title, err := services.GenerateTitle(input.Content)
+	if err != nil {
+		http.Error(w, "Failed to generate title: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Return the title as JSON
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"title": title,
+	})
+}
+
 // Helper struct for the incoming JSON payload
 type generateTagsInput struct {
 	Title   string `json:"title"`

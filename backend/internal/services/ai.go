@@ -23,6 +23,59 @@ type ollamaResponse struct {
 	Response string `json:"response"`
 }
 
+// GenerateTitle asks the local Ollama model to create a short title based on the content
+func GenerateTitle(content string) (string, error) {
+	ollamaURL := os.Getenv("OLLAMA_URL")
+	modelName := os.Getenv("OLLAMA_MODEL")
+
+	if ollamaURL == "" || modelName == "" {
+		return "", fmt.Errorf("ollama configuration missing in .env")
+	}
+
+	// Prompt engineered for a short, clean title
+	prompt := fmt.Sprintf(`
+		Analyze the following note content and generate a short, descriptive, and catchy title (maximum 6 words).
+		Respond STRICTLY with the title only. Do not use quotes, markdown formatting, or any extra explanations.
+		
+		Content: %s
+	`, content)
+
+	reqBody := ollamaRequest{
+		Model:  modelName,
+		Prompt: prompt,
+		Stream: false,
+	}
+
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", err
+	}
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Post(ollamaURL, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", fmt.Errorf("failed to reach Ollama: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("ollama returned status: %d", resp.StatusCode)
+	}
+
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	var ollamaResp ollamaResponse
+	if err := json.Unmarshal(bodyBytes, &ollamaResp); err != nil {
+		return "", err
+	}
+
+	// Clean up the response (remove any quotes or trailing newlines the LLM might add)
+	cleanTitle := strings.TrimSpace(ollamaResp.Response)
+	cleanTitle = strings.ReplaceAll(cleanTitle, "\"", "")
+	cleanTitle = strings.TrimSuffix(cleanTitle, ".") // remove trailing period if present
+
+	return cleanTitle, nil
+}
+
 // GenerateTags asks the local Ollama model to generate tags for a given text
 func GenerateTags(title, content string) ([]string, error) {
 	ollamaURL := os.Getenv("OLLAMA_URL")
