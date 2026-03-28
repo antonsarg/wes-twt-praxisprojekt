@@ -6,19 +6,19 @@ import {
   inject,
   signal
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { NoteService } from '../../core/services/note.service';
+import { NoteCardComponent } from '../note-card/note-card.component';
 import { Note } from '../../core/models/note.model';
 
 @Component({
   selector: 'app-dashboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, RouterLink],
+  imports: [RouterLink, NoteCardComponent],
   template: `
     <div class="bg-surface min-h-[calc(100vh-4rem)]">
       <div class="max-w-7xl mx-auto px-11 py-11">
@@ -36,7 +36,7 @@ import { Note } from '../../core/models/note.model';
             }
           </p>
 
-          <!-- Search bar — ghost border per design spec -->
+          <!-- Search bar — ghost border per DESIGN.md spec -->
           <div class="mt-7 max-w-sm">
             <input
               type="search"
@@ -89,60 +89,11 @@ import { Note } from '../../core/models/note.model';
           </div>
         }
 
-        <!-- Notes grid -->
+        <!-- Notes grid — uses shared NoteCardComponent -->
         @else {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[1.4rem]">
             @for (note of notes(); track note.id) {
-              <!--
-                Card design per DESIGN.md:
-                - surface_container_lowest fill = "lifted" look without shadow
-                - rounded-xl = md radius (0.75rem)
-                - hover: surface_container_low (subtle press effect)
-                - No horizontal dividers
-              -->
-              <article
-                [routerLink]="['/notes', note.id]"
-                class="bg-surface-container-lowest rounded-xl p-7 cursor-pointer
-                       transition-colors duration-150 hover:bg-surface-container-low
-                       focus-visible:outline-2 focus-visible:outline-primary
-                       group flex flex-col"
-                [attr.aria-label]="'Open note: ' + (note.title || 'Untitled')"
-                tabindex="0"
-                role="button"
-              >
-                <!-- Title (headline-sm / Manrope) + date (label-md / Inter) -->
-                <header class="mb-3">
-                  <h2 class="font-display text-lg font-semibold text-on-surface leading-snug line-clamp-2 mb-1">
-                    {{ note.title || 'Untitled' }}
-                  </h2>
-                  <time
-                    class="font-body text-xs font-medium text-on-surface/40"
-                    [attr.datetime]="note.created_at"
-                  >
-                    {{ note.created_at | date:'MMM d, yyyy' }}
-                  </time>
-                </header>
-
-                <!-- Content preview (body-lg / Inter) -->
-                <p class="font-body text-sm text-on-surface/65 leading-relaxed line-clamp-3 mb-4 flex-1">
-                  {{ note.content }}
-                </p>
-
-                <!-- Tags — rounded-full (9999px) chips per DESIGN.md -->
-                @if (note.tags.length) {
-                  <footer class="flex flex-wrap gap-1.5 mt-auto">
-                    @for (tag of note.tags; track tag) {
-                      <span
-                        class="font-body text-xs font-medium px-2.5 py-[0.3rem]
-                               rounded-full bg-surface-container-low text-on-surface/60
-                               group-hover:bg-surface-container-highest transition-colors"
-                      >
-                        {{ tag }}
-                      </span>
-                    }
-                  </footer>
-                }
-              </article>
+              <app-note-card [note]="note" />
             }
           </div>
         }
@@ -156,11 +107,7 @@ import { Note } from '../../core/models/note.model';
         - xl rounded (1.5rem) corners
         - Asymmetric bottom-right placement
       -->
-      <a
-        routerLink="/notes/new"
-        class="fab"
-        aria-label="Create a new note"
-      >
+      <a routerLink="/notes/new" class="fab" aria-label="Create a new note">
         <span aria-hidden="true" class="text-base leading-none">✦</span>
         New note
       </a>

@@ -27,6 +27,16 @@ export class NoteService {
     // Note: search results intentionally do NOT overwrite the full-list cache
   }
 
+  /**
+   * Fetches notes within a specific date range for the Monthly View.
+   * Calls GET /api/notes/search?from=YYYY-MM-DD&to=YYYY-MM-DD
+   */
+  getNotesByDateRange(from: string, to: string): Observable<Note[]> {
+    return this.http.get<Note[]>('/api/notes/search', {
+      params: new HttpParams().set('from', from).set('to', to)
+    });
+  }
+
   getMonths(): Observable<MonthGroup[]> {
     return this.http.get<MonthGroup[]>('/api/notes/months');
   }

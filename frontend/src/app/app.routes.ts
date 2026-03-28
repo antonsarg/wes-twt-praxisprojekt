@@ -31,6 +31,11 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
+        path: 'monthly',
+        loadComponent: () =>
+          import('./features/monthly-view/monthly-view.component').then(m => m.MonthlyViewComponent)
+      },
+      {
         path: 'notes/new',
         loadComponent: () =>
           import('./features/note-editor/note-editor.component').then(m => m.NoteEditorComponent)

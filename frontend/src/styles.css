@@ -284,3 +284,57 @@
   border-top-color: #ffffff;
   animation: ai-spin 0.65s linear infinite;
 }
+
+/* ── Monthly View ─────────────────────────────────────────────────────────── */
+
+/*
+  Circular FAB for Monthly View — pencil icon variant.
+  Ambient shadow per DESIGN.md (8% on_surface, 32px blur, -4px spread).
+  position: fixed ensures it sits over the scrollable content columns.
+*/
+.fab-circle {
+  position: fixed;
+  bottom: 2.75rem;
+  right: 2.75rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #004d64, #006684);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 0 32px -4px rgba(25, 28, 29, 0.08);
+  transition: opacity 0.2s ease;
+  border: none;
+}
+
+.fab-circle:hover {
+  opacity: 0.88;
+}
+
+.fab-circle:focus-visible {
+  outline: 2px solid #004d64;
+  outline-offset: 3px;
+}
+
+/*
+  Month navigation item in the sidebar.
+  Hover/active handled here (not via dynamic Tailwind strings) so Tailwind
+  JIT doesn't purge the classes when they appear only as runtime values.
+*/
+.month-nav-item {
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.month-nav-item:hover:not(.active-month) {
+  background-color: rgba(225, 227, 228, 0.5);
+}
+
+.month-nav-item.active-month {
+  background-color: var(--color-surface-container-highest);
+}

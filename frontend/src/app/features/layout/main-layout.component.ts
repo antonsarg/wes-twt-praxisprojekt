@@ -26,7 +26,14 @@ import { AuthService } from '../../core/services/auth.service';
         </a>
 
         <!-- Nav actions -->
-        <nav aria-label="Main navigation">
+        <nav aria-label="Main navigation" class="flex items-center gap-1">
+          <a
+            routerLink="/monthly"
+            class="font-body text-sm font-medium text-on-surface/50 hover:text-on-surface
+                   px-4 py-2 rounded-lg hover:bg-surface-container-highest transition-colors"
+          >
+            Archive
+          </a>
           <button
             type="button"
             (click)="logout()"
