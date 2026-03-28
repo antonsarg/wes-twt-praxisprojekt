@@ -7,28 +7,26 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
-	// 1. Load Environment Variables
-	err := godotenv.Load("../.env")
-	if err != nil {
-		log.Printf("Warning: No .env file found: %v", err)
-	}
-
 	dbUser := os.Getenv("DATABASE_USER")
 	dbPass := os.Getenv("DATABASE_PASSWORD")
 	dbName := os.Getenv("DATABASE_NAME")
+
+	dbHost := os.Getenv("DATABASE_HOST")
+	if dbHost == "" {
+		dbHost = "localhost"
+	}
 
 	if dbUser == "" {
 		log.Fatal("Missing database environment variables. Are you running this from the project root?")
 	}
 
-	// 2. Connect to Database
-	connStr := fmt.Sprintf("postgres://%s:%s@localhost:5432/%s?sslmode=disable", dbUser, dbPass, dbName)
+	// Connect to Database
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:5432/%s?sslmode=disable", dbUser, dbPass, dbHost, dbName)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
@@ -40,7 +38,7 @@ func main() {
 	}
 	fmt.Println("Connected to database...")
 
-	// 3. Create a Dummy User for the Arts Class
+	// Create a Dummy User for the Arts Class
 	email := "anton@example.com"
 	password := "securepassword123"
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), 14)
@@ -58,7 +56,7 @@ func main() {
 	}
 	fmt.Printf("User ready (ID: %d)\n", userID)
 
-	// 4. Define the Dummy Notes (Arts Class Theme)
+	// Define the Dummy Notes (Arts Class Theme)
 	now := time.Now()
 	notes := []struct {
 		Title     string
@@ -98,7 +96,7 @@ func main() {
 		},
 	}
 
-	// 5. Insert Notes into Database
+	// Insert Notes into Database
 	// We write a custom SQL string here so we can force the created_at date to be in the past
 	stmt := `INSERT INTO notes (user_id, title, content, tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $5)`
 

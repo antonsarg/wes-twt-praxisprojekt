@@ -11,21 +11,20 @@ import (
 	"gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt-backend/internal/middleware"
 	"gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt-backend/internal/models"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		log.Printf("Warning: No .env file found: %v", err)
-	}
-
 	dbUser := os.Getenv("DATABASE_USER")
 	dbPass := os.Getenv("DATABASE_PASSWORD")
 	dbName := os.Getenv("DATABASE_NAME")
 
-	connStr := fmt.Sprintf("postgres://%s:%s@localhost:5432/%s?sslmode=disable", dbUser, dbPass, dbName)
+	dbHost := os.Getenv("DATABASE_HOST")
+	if dbHost == "" {
+		dbHost = "localhost"
+	}
+
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:5432/%s?sslmode=disable", dbUser, dbPass, dbHost, dbName)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
