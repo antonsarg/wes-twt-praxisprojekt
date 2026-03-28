@@ -20,10 +20,10 @@ import { Note } from '../../core/models/note.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, RouterLink],
   template: `
-    <div class="min-h-[calc(100vh-4rem)] bg-surface-container-lowest">
+    <div class="min-h-full bg-surface-container-lowest">
 
       @if (loadingNote()) {
-        <div class="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <div class="flex items-center justify-center min-h-full">
           <p class="font-display text-2xl font-semibold text-on-surface/20 animate-pulse">
             Loading note…
           </p>
@@ -32,9 +32,11 @@ import { Note } from '../../core/models/note.model';
 
         <form [formGroup]="form" (ngSubmit)="save()" novalidate>
 
+          <!-- Sticky action bar -->
           <div
-            class="sticky top-16 z-10 flex items-center gap-4 px-11 py-4
-                   bg-surface-container-lowest/80 backdrop-blur-md"
+            class="sticky top-0 z-10 flex items-center gap-4 px-4 md:px-11 py-4
+                   bg-surface-container-lowest/80 backdrop-blur-md
+                   border-b border-outline-variant/15"
           >
             <a
               routerLink="/dashboard"
@@ -42,7 +44,7 @@ import { Note } from '../../core/models/note.model';
                      transition-colors flex items-center gap-1.5 rounded focus-visible:outline-primary"
               aria-label="Back to notes"
             >
-              <span aria-hidden="true">←</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-left-icon lucide-move-left"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
               Notes
             </a>
 
@@ -63,7 +65,8 @@ import { Note } from '../../core/models/note.model';
                       (click)="deleteNote()"
                       [disabled]="deleting()"
                       class="font-body text-sm font-semibold text-tertiary
-                             hover:opacity-70 transition-opacity disabled:opacity-40 cursor-pointer"
+                             hover:opacity-70 transition-opacity disabled:opacity-40 cursor-pointer
+                             bg-transparent border-0"
                     >
                       {{ deleting() ? 'Deleting…' : 'Yes, delete' }}
                     </button>
@@ -71,7 +74,7 @@ import { Note } from '../../core/models/note.model';
                       type="button"
                       (click)="showDeleteConfirm.set(false)"
                       class="font-body text-sm text-on-surface/50 hover:text-on-surface
-                             transition-colors cursor-pointer"
+                             transition-colors cursor-pointer bg-transparent border-0"
                     >
                       Cancel
                     </button>
@@ -82,17 +85,22 @@ import { Note } from '../../core/models/note.model';
                     (click)="showDeleteConfirm.set(true)"
                     class="font-body text-sm text-on-surface/35 hover:text-tertiary
                            px-3 py-2 transition-colors cursor-pointer rounded
-                           focus-visible:outline-primary"
+                           focus-visible:outline-primary bg-transparent border-0"
                   >
                     Delete
                   </button>
                 }
               }
 
+              <!-- Save / Create button -->
               <button
                 type="submit"
                 [disabled]="form.invalid || saving()"
-                class="btn-primary px-5 py-2.5 rounded-xl text-sm"
+                class="px-5 py-2.5 rounded-xl text-sm
+                       bg-gradient-to-br from-primary to-primary-container text-white
+                       font-body font-semibold border-0 cursor-pointer
+                       transition-opacity duration-200
+                       hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ saving() ? 'Saving…' : isEditMode() ? 'Save changes' : 'Create note' }}
               </button>
@@ -100,17 +108,23 @@ import { Note } from '../../core/models/note.model';
             </div>
           </div>
 
-          <div class="max-w-3xl mx-auto px-11 py-12">
+          <div class="max-w-3xl mx-auto px-4 md:px-11 py-12">
 
+            <!-- Title -->
             <div class="mb-10">
               <input
                 id="note-title"
                 type="text"
                 formControlName="title"
-                class="editor-title w-full"
                 placeholder="Note title…"
                 autocomplete="off"
                 aria-label="Note title"
+                class="w-full font-display text-[2.25rem] font-semibold leading-[1.2] text-on-surface
+                       bg-transparent border-0 border-b-2 border-transparent
+                       outline-none py-1 px-0
+                       transition-[border-color] duration-200
+                       placeholder:text-on-surface/[0.18]
+                       focus:[border-bottom-width:3px] focus:border-primary"
                 [attr.aria-invalid]="form.get('title')?.invalid && form.get('title')?.touched"
               />
               @if (form.get('title')?.invalid && form.get('title')?.touched) {
@@ -119,15 +133,25 @@ import { Note } from '../../core/models/note.model';
                 </p>
               }
 
+              <!-- Magic Title -->
               <button
                 type="button"
                 (click)="generateTitle()"
                 [disabled]="!hasContent() || aiTitleLoading()"
-                class="ai-btn mt-4"
+                class="mt-4 inline-flex items-center gap-1.5 px-[1.125rem] py-2 rounded-full
+                       bg-gradient-to-br from-primary to-primary-container
+                       text-white font-body text-[0.8125rem] font-semibold
+                       border-0 cursor-pointer transition-opacity duration-200 whitespace-nowrap
+                       enabled:hover:opacity-[0.88]
+                       disabled:opacity-45 disabled:cursor-not-allowed
+                       focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-[3px]"
                 aria-label="Generate title with AI"
               >
                 @if (aiTitleLoading()) {
-                  <span class="ai-spinner" aria-hidden="true"></span>
+                  <span
+                    class="inline-block shrink-0 w-3 h-3 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                    aria-hidden="true"
+                  ></span>
                   AI is thinking…
                 } @else {
                   <span aria-hidden="true">✨</span>
@@ -136,14 +160,21 @@ import { Note } from '../../core/models/note.model';
               </button>
             </div>
 
+            <!-- Content -->
             <div class="mb-12">
               <textarea
                 id="note-content"
                 formControlName="content"
-                class="editor-content w-full text-left"
                 placeholder="Start writing…"
                 aria-label="Note content"
                 (input)="autoResize($event)"
+                class="w-full text-left font-body text-[1.125rem] leading-[1.8] text-on-surface
+                       bg-transparent border-0 border-b-2 border-transparent
+                       outline-none py-1 px-0 resize-none min-h-72
+                       [field-sizing:content]
+                       transition-[border-color] duration-200
+                       placeholder:text-on-surface/[0.18]
+                       focus:border-b-2 focus:border-primary/20"
                 [attr.aria-invalid]="form.get('content')?.invalid && form.get('content')?.touched"
               ></textarea>
               @if (form.get('content')?.invalid && form.get('content')?.touched) {
@@ -153,6 +184,7 @@ import { Note } from '../../core/models/note.model';
               }
             </div>
 
+            <!-- Tags -->
             <div class="mb-10">
               <label class="font-body text-xs font-semibold uppercase tracking-widest text-on-surface/50 block mb-4">
                 Tags
@@ -160,12 +192,16 @@ import { Note } from '../../core/models/note.model';
 
               <div class="flex flex-wrap gap-2 items-center min-h-[2rem]">
                 @for (tag of tags(); track tag) {
-                  <span class="tag-chip">
+                  <span class="inline-flex items-center gap-[0.3rem] pl-[0.875rem] pr-3 py-[0.3rem]
+                                rounded-full bg-surface-container-low
+                                font-body text-[0.8125rem] font-medium text-on-surface select-none">
                     {{ tag }}
                     <button
                       type="button"
                       (click)="removeTag(tag)"
-                      class="tag-chip-remove"
+                      class="text-lg leading-none text-on-surface/40 cursor-pointer
+                             bg-transparent border-0 p-0 flex items-center
+                             transition-colors duration-150 hover:text-tertiary"
                       [attr.aria-label]="'Remove tag ' + tag"
                     >
                       ×
@@ -176,22 +212,34 @@ import { Note } from '../../core/models/note.model';
                 <input
                   #tagInputEl
                   type="text"
-                  class="tag-inline-input"
                   placeholder="{{ tags().length ? '' : 'Add tags…' }}"
                   (keydown)="onTagKeydown($event, tagInputEl)"
+                  class="bg-transparent border-0 outline-none font-body text-sm text-on-surface
+                         min-w-20 flex-1 py-[0.3rem] px-0
+                         placeholder:text-on-surface/30"
                   aria-label="Add tag — press Enter or comma to confirm"
                 />
               </div>
 
+              <!-- Magic Tags -->
               <button
                 type="button"
                 (click)="generateTags(tagInputEl)"
                 [disabled]="!hasContent() || aiTagsLoading()"
-                class="ai-btn mt-4"
+                class="mt-4 inline-flex items-center gap-1.5 px-[1.125rem] py-2 rounded-full
+                       bg-gradient-to-br from-primary to-primary-container
+                       text-white font-body text-[0.8125rem] font-semibold
+                       border-0 cursor-pointer transition-opacity duration-200 whitespace-nowrap
+                       enabled:hover:opacity-[0.88]
+                       disabled:opacity-45 disabled:cursor-not-allowed
+                       focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-[3px]"
                 aria-label="Generate tags with AI"
               >
                 @if (aiTagsLoading()) {
-                  <span class="ai-spinner" aria-hidden="true"></span>
+                  <span
+                    class="inline-block shrink-0 w-3 h-3 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                    aria-hidden="true"
+                  ></span>
                   AI is thinking…
                 } @else {
                   <span aria-hidden="true">✨</span>

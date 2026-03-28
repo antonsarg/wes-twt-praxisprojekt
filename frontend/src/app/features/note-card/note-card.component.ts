@@ -22,7 +22,7 @@ import { Note } from '../../core/models/note.model';
   template: `
     <article
       [routerLink]="['/notes', note().id]"
-      class="bg-surface-container-lowest rounded-xl p-7 cursor-pointer
+      class="bg-surface-container-lowest rounded-xl p-7
              transition-colors duration-150 hover:bg-surface-container-low
              focus-visible:outline-2 focus-visible:outline-primary
              group flex flex-col"
@@ -53,7 +53,7 @@ import { Note } from '../../core/models/note.model';
         <footer class="flex flex-wrap gap-1.5 mt-auto">
           @for (tag of note().tags; track tag) {
             <span
-              class="font-body text-xs font-medium px-2.5 py-[0.3rem]
+              class="font-body text-xs uppercase font-medium px-2.5 py-[0.3rem]
                      rounded-full bg-surface-container-low text-on-surface/60
                      group-hover:bg-surface-container-highest transition-colors"
             >

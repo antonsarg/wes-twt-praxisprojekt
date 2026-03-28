@@ -20,7 +20,7 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
 
         <!-- Card -->
-        <div class="bg-surface-container-lowest rounded-2xl p-10 ambient-shadow">
+        <div class="bg-surface-container-lowest rounded-2xl p-10 shadow-[0_0_32px_-4px_rgba(25,28,29,0.08)]">
 
           <h1 class="font-display text-4xl font-semibold text-on-surface leading-tight mb-2">
             Welcome back.
@@ -53,8 +53,12 @@ import { AuthService } from '../../../core/services/auth.service';
                 type="email"
                 formControlName="email"
                 autocomplete="email"
-                class="auth-input"
                 placeholder="you@example.com"
+                class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30
+                       py-2 font-body text-base text-on-surface
+                       transition-[border-color,border-width] duration-200 outline-none
+                       placeholder:text-on-surface/30
+                       focus:[border-bottom-width:3px] focus:border-primary"
                 [attr.aria-invalid]="form.get('email')?.invalid && form.get('email')?.touched"
               />
               @if (form.get('email')?.invalid && form.get('email')?.touched) {
@@ -77,8 +81,12 @@ import { AuthService } from '../../../core/services/auth.service';
                 type="password"
                 formControlName="password"
                 autocomplete="current-password"
-                class="auth-input"
                 placeholder="••••••••"
+                class="w-full bg-transparent border-0 border-b-2 border-outline-variant/30
+                       py-2 font-body text-base text-on-surface
+                       transition-[border-color,border-width] duration-200 outline-none
+                       placeholder:text-on-surface/30
+                       focus:[border-bottom-width:3px] focus:border-primary"
                 [attr.aria-invalid]="form.get('password')?.invalid && form.get('password')?.touched"
               />
               @if (form.get('password')?.invalid && form.get('password')?.touched) {
@@ -92,7 +100,11 @@ import { AuthService } from '../../../core/services/auth.service';
             <button
               type="submit"
               [disabled]="form.invalid || loading()"
-              class="btn-primary w-full py-3.5 px-6 rounded-xl text-base"
+              class="w-full py-3.5 px-6 rounded-xl text-base
+                     bg-gradient-to-br from-primary to-primary-container text-white
+                     font-body font-semibold border-0 cursor-pointer
+                     transition-opacity duration-200
+                     hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ loading() ? 'Signing in…' : 'Sign in' }}
             </button>

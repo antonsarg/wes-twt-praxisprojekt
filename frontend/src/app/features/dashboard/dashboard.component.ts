@@ -25,7 +25,7 @@ import { Note } from '../../core/models/note.model';
         <!-- Page header -->
         <div class="mb-11">
           <h1 class="font-display font-semibold text-on-surface leading-tight" style="font-size: 3rem">
-            Your notes.
+            My notes
           </h1>
           <p class="font-body text-sm text-on-surface/50 mt-2">
             @if (loading()) {
@@ -88,8 +88,18 @@ import { Note } from '../../core/models/note.model';
       </div>
 
       <!-- New Note FAB -->
-      <a routerLink="/notes/new" class="fab" aria-label="Create a new note">
-        <span aria-hidden="true" class="text-base leading-none">✦</span>
+      <a
+        routerLink="/notes/new"
+        class="fixed bottom-11 right-11 flex items-center gap-2 px-6 py-3.5
+               bg-gradient-to-br from-primary to-primary-container text-white
+               font-body font-semibold text-[0.9375rem] border-0 rounded-3xl
+               shadow-[0_0_32px_-4px_rgba(25,28,29,0.08)] cursor-pointer no-underline
+               transition-opacity duration-200
+               hover:opacity-[0.92]
+               focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-[3px]"
+        aria-label="Create a new note"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-icon lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
         New note
       </a>
 

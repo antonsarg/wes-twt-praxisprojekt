@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { AuthService } from '../../core/services/auth.service';
@@ -11,20 +11,29 @@ import { AuthService } from '../../core/services/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
-    <!--
-      Root layout: fixed left sidebar + flex-1 right content area.
-      h-screen + overflow-hidden on the outer container gives both columns
-      independent scroll behaviour.
-    -->
     <div class="flex h-screen overflow-hidden">
 
-      <!-- ── LEFT SIDEBAR ──────────────────────────────────────────────── -->
+      <!-- Mobile backdrop overlay -->
+      @if (sidebarOpen()) {
+        <div
+          class="fixed inset-0 z-20 bg-black/20 md:hidden"
+          (click)="sidebarOpen.set(false)"
+          aria-hidden="true"
+        ></div>
+      }
+
+      <!-- ── SIDEBAR ─────────────────────────────────────────────────────── -->
       <!--
-        Background: surface_container_lowest (white) per user spec.
-        Border: ghost border (outline_variant ≈15% opacity) per DESIGN.md fallback.
+        Mobile: fixed drawer, slides in from the left.
+        Desktop (md+): static, always visible in the flex row.
       -->
       <aside
-        class="w-64 h-screen flex flex-col shrink-0 bg-surface-container-lowest sidebar-right-border"
+        id="main-sidebar"
+        class="fixed inset-y-0 left-0 z-30 w-64 flex flex-col shrink-0
+               bg-surface-container-lowest border-r border-outline-variant/25
+               transition-transform duration-200
+               md:static md:translate-x-0 md:z-auto"
+        [class]="sidebarOpen() ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
         aria-label="Application sidebar"
       >
 
@@ -47,45 +56,52 @@ import { AuthService } from '../../core/services/auth.service';
         <!-- Navigation links -->
         <nav class="flex-1 px-3" aria-label="Main navigation">
 
-          <!--
-            Active state: routerLinkActive adds .nav-link-active class.
-            nav-link CSS reserves 3px left-border space at all times (no layout shift).
-            Active state fills border-left with primary colour + bolder text + bg.
-          -->
           <a
             routerLink="/dashboard"
-            routerLinkActive="nav-link-active"
+            routerLinkActive
+            #dashRla="routerLinkActive"
             [routerLinkActiveOptions]="{ exact: false }"
-            class="nav-link"
+            class="flex items-center gap-2.5 py-2.5 pl-3 pr-3.5 mb-1
+                   border-r-[3px] font-body text-[0.875rem] no-underline cursor-pointer
+                   transition-colors duration-150"
+            [class]="dashRla.isActive
+              ? 'border-r-primary bg-surface-container-low text-on-surface font-semibold'
+              : 'border-r-transparent text-on-surface/55 font-medium hover:bg-surface-container-highest/50'"
             aria-label="Dashboard"
           >
-            <!-- Calendar icon -->
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard-icon lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
             Dashboard
           </a>
 
           <a
             routerLink="/monthly"
-            routerLinkActive="nav-link-active"
-            class="nav-link"
+            routerLinkActive
+            #archRla="routerLinkActive"
+            class="flex items-center gap-2.5 py-2.5 pl-3 pr-3.5 mb-1
+                   border-r-[3px] font-body text-[0.875rem] no-underline cursor-pointer
+                   transition-colors duration-150"
+            [class]="archRla.isActive
+              ? 'border-r-primary bg-surface-container-low text-on-surface font-semibold'
+              : 'border-r-transparent text-on-surface/55 font-medium hover:bg-surface-container-highest/50'"
             aria-label="Archive"
           >
-            <!-- Calendar icon -->
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-icon lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
-            Monthly Overview
+            Montly Overview
           </a>
 
         </nav>
 
-        <!-- Bottom: sign-out action -->
+        <!-- Bottom: sign-out -->
         <div class="px-3 pb-6 shrink-0">
           <button
             type="button"
             (click)="logout()"
-            class="nav-link w-full"
+            class="flex items-center gap-2.5 py-2.5 pl-3 pr-3.5 w-full
+                   border-r-[3px] border-r-transparent font-body text-[0.875rem] font-medium
+                   text-on-surface/55 cursor-pointer bg-transparent border-t-0 border-r-0 border-b-0
+                   transition-colors duration-150 hover:bg-surface-container-highest/50"
             aria-label="Sign out"
           >
-            <!-- Log-out / exit icon -->
             <svg
               width="18" height="18" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="2"
@@ -102,25 +118,46 @@ import { AuthService } from '../../core/services/auth.service';
 
       </aside>
 
-      <!-- ── RIGHT CONTENT AREA ────────────────────────────────────────── -->
-      <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- ── RIGHT CONTENT AREA ────────────────────────────────────────────── -->
+      <div class="flex-1 flex flex-col overflow-hidden min-w-0">
 
-        <!--
-          Minimalist top header — search bar only.
-          Sits at the very top of the content area, always visible.
-          Background matches sidebar (white) with a subtle bottom separator.
-        -->
+        <!-- Search header -->
         <header
-          class="h-14 px-8 flex items-center shrink-0
-                 bg-surface-container-lowest search-header-border"
+          class="h-20 px-4 md:px-8 flex items-center shrink-0
+                 bg-surface-container-lowest border-b border-outline-variant/20"
           role="search"
           aria-label="Search notes"
         >
+
+          <!-- Hamburger button — mobile only -->
+          <button
+            type="button"
+            class="md:hidden mr-3 p-2 rounded-lg text-on-surface/55 bg-transparent
+                   border-0 hover:bg-surface-container-highest transition-colors duration-150 cursor-pointer"
+            (click)="sidebarOpen.update(v => !v)"
+            [attr.aria-expanded]="sidebarOpen()"
+            aria-controls="main-sidebar"
+            aria-label="Toggle navigation"
+          >
+            @if (sidebarOpen()) {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            } @else {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            }
+          </button>
+
           <div class="relative w-full max-w-sm">
-            <!-- Search icon -->
             <span
-              class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              style="color: rgba(25, 28, 29, 0.35)"
+              class="absolute left-3 top-1/2 text-primary -translate-y-1/2 pointer-events-none text-on-surface/35"
               aria-hidden="true"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -131,8 +168,11 @@ import { AuthService } from '../../core/services/auth.service';
             </span>
             <input
               type="search"
-              class="search-input"
-              style="padding-left: 2.25rem"
+              class="w-full bg-zinc-100 border border-outline-variant/15 rounded-full
+                     pl-9 pr-4 py-2.5 font-body text-sm text-on-surface
+                     outline-none transition-[border-color] duration-200
+                     placeholder:text-on-surface/35
+                     focus:border-primary/35"
               placeholder="Search notes…"
               [value]="searchQuery()"
               (input)="onSearch($any($event.target).value)"
@@ -141,7 +181,7 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
         </header>
 
-        <!-- Router outlet — flex-1 so it fills remaining height; overflow-auto so pages scroll -->
+        <!-- Router outlet -->
         <main class="flex-1 overflow-auto" id="main-content" tabindex="-1">
           <router-outlet />
         </main>
@@ -156,11 +196,11 @@ export class MainLayoutComponent {
   private destroyRef = inject(DestroyRef);
 
   searchQuery = signal('');
+  sidebarOpen = signal(false);
   private searchSubject = new Subject<string>();
 
   constructor() {
-    // Debounce keystrokes, then navigate to /dashboard?q=...
-    // The DashboardComponent reads the query param to execute the search.
+    // Debounce search and navigate to /dashboard?q=...
     this.searchSubject.pipe(
       debounceTime(350),
       distinctUntilChanged(),
@@ -171,6 +211,12 @@ export class MainLayoutComponent {
         queryParamsHandling: 'replace'
       });
     });
+
+    // Close the mobile sidebar automatically on any navigation
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => this.sidebarOpen.set(false));
   }
 
   onSearch(value: string): void {
