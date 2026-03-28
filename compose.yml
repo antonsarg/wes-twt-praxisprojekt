@@ -1,4 +1,17 @@
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4201:4200"
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
   backend:
     build:
       context: ./backend
@@ -15,6 +28,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - OLLAMA_URL=${OLLAMA_URL}
       - OLLAMA_MODEL=${OLLAMA_MODEL}
+    volumes:
+      - ./backend:/app
     depends_on:
       - db
     restart: unless-stopped

@@ -1,0 +1,23 @@
+# --- Existing ---
+node_modules
+dist
+.angular
+
+# --- IDEs and AI Tools ---
+.vscode
+.claude
+.junie
+
+# --- Documentation (Not needed to run the app) ---
+README.md
+DESIGN.md
+
+# --- Git and Formatting ---
+.gitignore
+.editorconfig
+.prettierrc
+
+# --- Docker Files (Keep the context clean) ---
+Dockerfile
+Dockerfile.dev
+.dockerignore

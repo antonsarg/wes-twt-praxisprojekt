@@ -1,3 +1,5 @@
+prerequisits: ollama installed and running OR uncomment ollama service in compose.yml
+
 ## Run in development environment
 ```
 docker compose -f compose.yml -f compose.dev.yml up --build
