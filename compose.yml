@@ -4,7 +4,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "4201:4200"
+      - "4200:4200"
     restart: unless-stopped
     volumes:
       - ./frontend:/app
@@ -41,8 +41,6 @@ services:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql
     healthcheck:

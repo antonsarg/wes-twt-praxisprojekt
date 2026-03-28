@@ -71,7 +71,7 @@ docker compose up --build
 ```
 
 Sobald die Container laufen, ist die Anwendung unter folgenden Adressen erreichbar:
-* **Frontend**: http://localhost:4201 (oder der in der compose-Datei definierte Port)
+* **Frontend**: http://localhost:4200 (oder der in der compose-Datei definierte Port)
 * **Backend API**: http://localhost:8080
 * **Adminer (DB Management)**: http://localhost:8081
 
@@ -84,3 +84,12 @@ Um die Datenbank mit Testdaten (Benutzer und Beispiel-Notizen) zu füllen, führ
 ```bash
 docker compose exec backend go run cmd/seed/main.go
 ```
+
+---
+
+## Weitere Ressourcen
+
+* [Reflexion](docs/reflexion.pdf)
+* [Präsentation](/docs/praesentation.pdf)
+* [Frontend Prompt](/docs/frontend_prompt.pdf)
+* [Design (Google Stitch)](https://stitch.withgoogle.com/projects/12592699125218748584)
