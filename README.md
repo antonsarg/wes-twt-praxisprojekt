@@ -31,10 +31,6 @@ Folge diesen Schritten, um das Projekt lokal aufzusetzen:
 ### 1. Repository klonen
 Navigiere in dein Arbeitsverzeichnis und klone das Projekt.
 
-```bash
-git clone https://gitlab.web.fh-kufstein.ac.at/sarganton.wes24/wes-twt-praxisprojekt.git
-```
-
 ### 2. Umgebungsvariablen konfigurieren
 Das Projekt benötigt eine .env-Datei im Hauptverzeichnis. Nutze die bereitgestellte Vorlage:
 
