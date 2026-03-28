@@ -72,3 +72,215 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Search input — Ghost Border per DESIGN.md (outline_variant at 15% opacity) */
+.search-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(191, 200, 205, 0.15);
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-on-surface);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.search-input::placeholder {
+  color: rgba(25, 28, 29, 0.35);
+}
+
+.search-input:focus {
+  border-color: rgba(0, 77, 100, 0.35);
+}
+
+/* New Note FAB — Signature Component per DESIGN.md */
+.fab {
+  position: fixed;
+  bottom: 2.75rem;    /* matches outer gallery margin */
+  right: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #004d64, #006684);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border: none;
+  border-radius: 1.5rem;        /* xl = 1.5rem per DESIGN.md */
+  box-shadow: 0 0 32px -4px rgba(25, 28, 29, 0.08); /* ambient shadow */
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.fab:hover {
+  opacity: 0.92;
+}
+
+.fab:focus-visible {
+  outline: 2px solid #004d64;
+  outline-offset: 3px;
+}
+
+/* ── Note Editor ──────────────────────────────────────────────────────────── */
+
+/*
+  Title input: headline-lg per DESIGN.md — large Manrope, no border at rest,
+  3px primary bottom border on focus. Placeholder is near-invisible (editorial).
+*/
+.editor-title {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-on-surface);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  outline: none;
+  padding: 0.25rem 0;
+  transition: border-color 0.2s ease;
+}
+
+.editor-title::placeholder {
+  color: rgba(25, 28, 29, 0.18);
+}
+
+.editor-title:focus {
+  border-bottom: 3px solid var(--color-primary);
+}
+
+/*
+  Content textarea: body-lg per DESIGN.md — Inter 1.125rem, no border at rest.
+  field-sizing: content = CSS-native auto-resize (Chrome 123+, Firefox 128+).
+  autoResize() in the component handles older browsers.
+  "Don't center-align long-form text" — DESIGN.md.
+*/
+.editor-content {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--color-on-surface);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  outline: none;
+  padding: 0.25rem 0;
+  resize: none;
+  min-height: 18rem;
+  transition: border-color 0.2s ease;
+  field-sizing: content; /* modern auto-resize */
+}
+
+.editor-content::placeholder {
+  color: rgba(25, 28, 29, 0.18);
+}
+
+.editor-content:focus {
+  border-bottom: 2px solid rgba(0, 77, 100, 0.2);
+}
+
+/* Tag chips — rounded-full (9999px) per DESIGN.md */
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.75rem 0.3rem 0.875rem;
+  border-radius: 9999px;
+  background-color: var(--color-surface-container-low);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-on-surface);
+  user-select: none;
+}
+
+.tag-chip-remove {
+  font-size: 1.125rem;
+  line-height: 1;
+  color: rgba(25, 28, 29, 0.4);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+
+.tag-chip-remove:hover {
+  color: var(--color-tertiary);
+}
+
+/* Tag add-input — flows inline with the chips */
+.tag-inline-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-on-surface);
+  min-width: 5rem;
+  flex: 1;
+  padding: 0.3rem 0;
+}
+
+.tag-inline-input::placeholder {
+  color: rgba(25, 28, 29, 0.3);
+}
+
+/*
+  AI action buttons — gradient pill shape.
+  Smaller than the primary CTA but unmistakably branded.
+  ✨ sparkle emoji adds the "magic" signal without custom icons.
+*/
+.ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1.125rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #004d64, #006684);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+.ai-btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.ai-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ai-btn:focus-visible {
+  outline: 2px solid #004d64;
+  outline-offset: 3px;
+}
+
+/* Inline spinner for AI loading state */
+@keyframes ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-spinner {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  animation: ai-spin 0.65s linear infinite;
+}

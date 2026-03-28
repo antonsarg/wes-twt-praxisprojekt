@@ -13,11 +13,10 @@ services:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_NAME}
       - JWT_SECRET=${JWT_SECRET}
-      - OLLAMA_URL=http://ollama:11434/api/generate
+      - OLLAMA_URL=${OLLAMA_URL}
       - OLLAMA_MODEL=${OLLAMA_MODEL}
     depends_on:
       - db
-#      - ollama
     restart: unless-stopped
 
   db:
@@ -57,14 +56,5 @@ services:
       - -database=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@db:5432/${DATABASE_NAME}?sslmode=disable
       - up
 
-#  ollama:
-#    image: ollama/ollama
-#    ports:
-#      - "11434:11434"
-#    volumes:
-#      - ollama:/root/.ollama
-#    restart: unless-stopped
-
 volumes:
   pgdata:
-#  ollama:

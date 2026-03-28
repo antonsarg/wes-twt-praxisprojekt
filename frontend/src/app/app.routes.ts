@@ -5,7 +5,7 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/dashboard',
+    redirectTo: 'dashboard',
     pathMatch: 'full'
   },
   {
@@ -18,14 +18,32 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/auth/register/register.component').then(m => m.RegisterComponent)
   },
+  // All authenticated routes share the MainLayoutComponent shell (navbar + router-outlet)
   {
-    path: 'dashboard',
-    canActivate: [authGuard],
+    path: '',
     loadComponent: () =>
-      import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+      import('./features/layout/main-layout.component').then(m => m.MainLayoutComponent),
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+      },
+      {
+        path: 'notes/new',
+        loadComponent: () =>
+          import('./features/note-editor/note-editor.component').then(m => m.NoteEditorComponent)
+      },
+      {
+        path: 'notes/:id',
+        loadComponent: () =>
+          import('./features/note-editor/note-editor.component').then(m => m.NoteEditorComponent)
+      }
+    ]
   },
   {
     path: '**',
-    redirectTo: '/dashboard'
+    redirectTo: 'dashboard'
   }
 ];
