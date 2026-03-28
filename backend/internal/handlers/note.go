@@ -80,6 +80,31 @@ func (h *NoteHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(notes)
 }
 
+func (h *NoteHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	noteIDStr := r.PathValue("id")
+	noteID, err := strconv.Atoi(noteIDStr)
+	if err != nil {
+		http.Error(w, "Invalid note ID", http.StatusBadRequest)
+		return
+	}
+
+	note, err := h.Notes.GetByID(noteID, userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(note)
+}
+
 func (h *NoteHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// 1. Get User ID from context
 	userID, ok := r.Context().Value(middleware.UserIDKey).(int)

@@ -92,6 +92,35 @@ func (m *NoteModel) GetAllForUser(userID int) ([]*Note, error) {
 	return notes, nil
 }
 
+func (m *NoteModel) GetByID(id, userID int) (*Note, error) {
+	stmt := `
+		SELECT id, user_id, title, content, tags, created_at, updated_at
+		FROM notes
+		WHERE id = $1
+		AND user_id = $2`
+
+	var note Note
+	err := m.DB.QueryRow(stmt, id, userID).Scan(
+		&note.ID,
+		&note.UserID,
+		&note.Title,
+		&note.Content,
+		pq.Array(&note.Tags),
+		&note.CreatedAt,
+		&note.UpdatedAt,
+	)
+
+	if err != nil {
+		// sql.ErrNoRows fangen wir ab, um eine saubere 404-Nachricht zu generieren
+		if err.Error() == "sql: no rows in result set" {
+			return nil, errors.New("note not found or unauthorized")
+		}
+		return nil, err
+	}
+
+	return &note, nil
+}
+
 func (m *NoteModel) Update(id, userID int, title, content string, tags []string) error {
 	if tags == nil {
 		tags = []string{}
