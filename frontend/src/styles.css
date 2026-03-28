@@ -1,3 +1,74 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+@theme {
+  /* Brand colors */
+  --color-primary: #004d64;
+  --color-primary-container: #006684;
+
+  /* Surface hierarchy */
+  --color-surface: #f8f9fa;
+  --color-surface-container-low: #f3f4f5;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-highest: #e1e3e4;
+  --color-surface-dim: #dde3e5;
+
+  /* Content colors */
+  --color-on-surface: #191c1d;
+  --color-tertiary: #6b3a00;
+  --color-outline-variant: #bfc8cd;
+
+  /* Typography */
+  --font-display: 'Manrope', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-body);
+    color: var(--color-on-surface);
+    background-color: var(--color-surface);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Design-system utility classes */
+.ambient-shadow {
+  box-shadow: 0 0 32px -4px rgba(25, 28, 29, 0.08);
+}
+
+.auth-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(191, 200, 205, 0.3);
+  padding: 0.5rem 0;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-on-surface);
+  transition: border-color 0.2s ease, border-width 0.15s ease;
+  outline: none;
+}
+
+.auth-input::placeholder {
+  color: rgba(25, 28, 29, 0.3);
+}
+
+.auth-input:focus {
+  border-bottom: 3px solid var(--color-primary);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #004d64, #006684);
+  color: white;
+  font-family: var(--font-body);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
