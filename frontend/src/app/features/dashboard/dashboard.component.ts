@@ -6,9 +6,8 @@ import {
   inject,
   signal
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { NoteService } from '../../core/services/note.service';
@@ -20,7 +19,7 @@ import { Note } from '../../core/models/note.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, NoteCardComponent],
   template: `
-    <div class="bg-surface min-h-[calc(100vh-4rem)]">
+    <div class="bg-surface min-h-full">
       <div class="max-w-7xl mx-auto px-11 py-11">
 
         <!-- Page header -->
@@ -29,24 +28,12 @@ import { Note } from '../../core/models/note.model';
             Your notes.
           </h1>
           <p class="font-body text-sm text-on-surface/50 mt-2">
-            @if (loading() && notes().length === 0) {
+            @if (loading()) {
               Loading…
             } @else {
               {{ noteCount() }} {{ noteCount() === 1 ? 'note' : 'notes' }}
             }
           </p>
-
-          <!-- Search bar — ghost border per DESIGN.md spec -->
-          <div class="mt-7 max-w-sm">
-            <input
-              type="search"
-              placeholder="Search notes…"
-              class="search-input"
-              [value]="searchQuery()"
-              (input)="onSearch($any($event.target).value)"
-              aria-label="Search notes"
-            />
-          </div>
         </div>
 
         <!-- Error banner -->
@@ -89,7 +76,7 @@ import { Note } from '../../core/models/note.model';
           </div>
         }
 
-        <!-- Notes grid — uses shared NoteCardComponent -->
+        <!-- Notes grid — shared NoteCardComponent -->
         @else {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[1.4rem]">
             @for (note of notes(); track note.id) {
@@ -100,13 +87,7 @@ import { Note } from '../../core/models/note.model';
 
       </div>
 
-      <!--
-        New Note FAB — Signature Component per DESIGN.md:
-        - Gradient: primary → primary_container
-        - Ambient shadow (8% on_surface, 32px blur, -4px spread)
-        - xl rounded (1.5rem) corners
-        - Asymmetric bottom-right placement
-      -->
+      <!-- New Note FAB -->
       <a routerLink="/notes/new" class="fab" aria-label="Create a new note">
         <span aria-hidden="true" class="text-base leading-none">✦</span>
         New note
@@ -117,48 +98,40 @@ import { Note } from '../../core/models/note.model';
 })
 export class DashboardComponent {
   private noteService = inject(NoteService);
+  private route = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
 
   notes = signal<Note[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
-  searchQuery = signal('');
   noteCount = computed(() => this.notes().length);
 
   readonly skeletons = [1, 2, 3, 4, 5, 6];
 
-  private searchSubject = new Subject<string>();
-
   constructor() {
-    // Initial load — direct, no debounce
-    this.noteService.getNotes().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    /*
+     * Drive data loading entirely from the URL query param `q`.
+     * The layout's search bar navigates to /dashboard?q=... after debounce.
+     * ActivatedRoute.queryParams fires immediately on subscribe (BehaviorSubject-like),
+     * so this handles both the initial page load AND subsequent searches.
+     */
+    this.route.queryParams.pipe(
+      map(params => (params['q'] ?? '').trim()),
+      distinctUntilChanged(),
+      tap(() => {
+        this.loading.set(true);
+        this.error.set(null);
+      }),
+      switchMap(q =>
+        q ? this.noteService.searchNotes(q) : this.noteService.getNotes()
+      ),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: notes => { this.notes.set(notes); this.loading.set(false); },
       error: () => {
         this.error.set('Could not load notes. Please refresh.');
         this.loading.set(false);
       }
     });
-
-    // Subsequent searches — debounced API calls
-    this.searchSubject.pipe(
-      debounceTime(350),
-      distinctUntilChanged(),
-      tap(() => this.loading.set(true)),
-      switchMap(q =>
-        q.trim() ? this.noteService.searchNotes(q) : this.noteService.getNotes()
-      ),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: notes => { this.notes.set(notes); this.loading.set(false); },
-      error: () => {
-        this.error.set('Search failed. Please try again.');
-        this.loading.set(false);
-      }
-    });
-  }
-
-  onSearch(value: string): void {
-    this.searchQuery.set(value);
-    this.searchSubject.next(value);
   }
 }

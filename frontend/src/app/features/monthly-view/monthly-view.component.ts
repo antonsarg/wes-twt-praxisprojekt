@@ -25,7 +25,7 @@ import { Note, MonthGroup } from '../../core/models/note.model';
       RIGHT — main content (surface) as the "Base Layer"
       Independent overflow-y-auto on each column for separate scrolling.
     -->
-    <div class="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <div class="flex h-full overflow-hidden">
 
       <!-- ── LEFT SIDEBAR ──────────────────────────────────────────────── -->
       <aside

@@ -338,3 +338,60 @@
 .month-nav-item.active-month {
   background-color: var(--color-surface-container-highest);
 }
+
+/* ── Sidebar Layout ───────────────────────────────────────────────────────── */
+
+/*
+  Ghost border on the right edge of the sidebar.
+  outline_variant at ~25% opacity — subtle separator without harsh line.
+*/
+.sidebar-right-border {
+  border-right: 1px solid rgba(191, 200, 205, 0.25);
+}
+
+/*
+  Ghost border on the bottom edge of the search header.
+  Slightly softer than sidebar border.
+*/
+.search-header-border {
+  border-bottom: 1px solid rgba(191, 200, 205, 0.2);
+}
+
+/*
+  Sidebar navigation link.
+  3px left-border slot reserved at all times so text doesn't shift on activation.
+  Active class (.nav-link-active) is added by routerLinkActive directive.
+*/
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.6rem 0.875rem 0.6rem 0.75rem;
+  border-left: 3px solid transparent;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(25, 28, 29, 0.55);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  background: transparent;
+  outline: none;
+}
+
+.nav-link:hover:not(.nav-link-active) {
+  background-color: rgba(225, 227, 228, 0.5);
+  color: rgba(25, 28, 29, 0.75);
+}
+
+.nav-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.nav-link-active {
+  background-color: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+  font-weight: 600;
+  border-left-color: var(--color-primary);
+}

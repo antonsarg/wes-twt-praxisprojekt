@@ -38,7 +38,7 @@ function passwordsMatchValidator(control: AbstractControl): ValidationErrors | n
             Create account.
           </h1>
           <p class="font-body text-sm text-on-surface/60 mb-9">
-            Your personal sanctuary for thought.
+            Start your focused journey today.
           </p>
 
           @if (error()) {
