@@ -313,26 +313,32 @@ export class NoteEditorComponent {
   }
 
   private loadNote(id: string): void {
-    // Fast path: use the service's in-memory cache populated by the dashboard
+    // Fast path: use the service's in-memory cache populated by the dashboard.
+    // The cache may be empty if the user navigated directly or clicked before
+    // the dashboard's GET /api/notes response finished (race condition).
     const cached = this.noteService.notes().find(n => n.id === id);
     if (cached) {
       this.populateForm(cached);
       return;
     }
 
-    // Slow path: no cache yet (direct URL navigation or page reload)
+    // Slow path: fetch the specific note directly from the API.
+    // Using GET /api/notes/:id avoids fetching all notes and eliminates the
+    // false-redirect bug that occurred when the full-list fetch succeeded but
+    // the note wasn't found (e.g. due to a cancelled in-flight request or ID
+    // type mismatch).
     this.loadingNote.set(true);
-    this.noteService.getNotes().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: notes => {
-        const note = notes.find(n => n.id === id);
-        if (note) {
-          this.populateForm(note);
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
+    this.noteService.getNote(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: note => {
+        this.populateForm(note);
         this.loadingNote.set(false);
       },
-      error: () => this.router.navigate(['/dashboard'])
+      error: () => {
+        // Show an error in the editor rather than silently redirecting.
+        // The user can read the message and decide to go back themselves.
+        this.saveError.set('Could not load this note. It may have been deleted or you may have lost your connection.');
+        this.loadingNote.set(false);
+      }
     });
   }
 

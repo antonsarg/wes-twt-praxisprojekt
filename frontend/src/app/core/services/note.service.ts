@@ -20,6 +20,10 @@ export class NoteService {
     );
   }
 
+  getNote(id: string): Observable<Note> {
+    return this.http.get<Note>(`/api/notes/${id}`);
+  }
+
   searchNotes(q: string): Observable<Note[]> {
     return this.http.get<Note[]>('/api/notes/search', {
       params: new HttpParams().set('q', q)

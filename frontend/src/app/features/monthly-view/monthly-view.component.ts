@@ -204,7 +204,7 @@ import { Note, MonthGroup } from '../../core/models/note.model';
               } @else {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-[1.4rem]">
                   @for (note of monthNotes(); track note.id) {
-                    <app-note-card [note]="note" />
+                    <app-note-card [note]="note" (deleted)="removeMonthNote($event)" />
                   }
                 </div>
               }
@@ -305,6 +305,12 @@ export class MonthlyViewComponent {
         next: res => { this.summary.set(res.summary); this.loadingSummary.set(false); },
         error: () => this.loadingSummary.set(false)
       });
+  }
+
+  removeMonthNote(id: string): void {
+    this.monthNotes.update(list => list.filter(n => n.id !== id));
+    // Also decrement the count badge in the sidebar for the selected month
+    this.selectedMonth.update(m => m ? { ...m, count: m.count - 1 } : m);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
